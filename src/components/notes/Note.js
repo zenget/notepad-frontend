@@ -1,110 +1,173 @@
-import React, { Fragment, useEffect, useContext } from 'react';
-import Spinner from '../layout/Spinner';
-import { Link } from 'react-router-dom';
-import Repos from '../repos/Repos';
-import GithubContext from '../../context/github/githubContext';
 
-const User = ({ match }) => {
+import React, { useContext, useEffect, useState } from 'react';
+import { useHistory } from 'react-router';
+import {
+    Container,
+    Grid,
+    makeStyles,
+    Button,
+    TextField,
+} from "@material-ui/core";
 
-    const githubContext = useContext(GithubContext);
+import Spinner from '../layout/Spinner'
+import NotepadContext from '../../context/notepadContext';
 
-    const { loading, getUser, user, getUserRepos } = githubContext;
+
+const useStyles = makeStyles((theme) => ({
+    paper: {
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "left"
+    },
+    avatar: {
+        margin: theme.spacing(1),
+        backgroundColor: theme.palette.secondary.main
+    },
+    form: {
+        width: "100%", // Fix IE 11 issue.
+        marginTop: theme.spacing(3)
+    },
+    btn: {
+        margin: theme.spacing(1),
+
+    }
+}));
+
+
+const Note = ({ id }) => {
+
+    const classes = useStyles();
+
+    const history = useHistory()
+
+    const notepadContext = useContext(NotepadContext);
+    const { loading, note, getNote } = notepadContext;
 
     useEffect(() => {
-        getUser(match.params.login);
-        getUserRepos(match.params.login);
+        if (id) {
+            getNote(id)
+        }
+
         // eslint-disable-next-line
     }, []);
 
+    const [title, setTitle] = useState(note?.title || null);
+    const [message, setMessage] = useState(note?.message || null);
+    const [owner, setOwner] = useState(note?.owner || null);
 
-    const {
-        name,
-        company,
-        avatar_url,
-        location,
-        bio,
-        blog,
-        login,
-        html_url,
-        followers,
-        following,
-        public_repos,
-        public_gists,
-        hireable
-    } = user;
+    if (loading) {
+        return <Spinner />;
+    }
 
+    let saveNote = async () => {
 
-    if (loading) return <Spinner />;
+        if (id) {
+            await notepadContext.updateNote({
+                id: id,
+                title: title || note?.title,
+                message: message || note?.message,
+                owner: owner || note?.owner
+            })
+            history.push('/')
+        }
+        else {
+            await notepadContext.createNote({
+                title: title,
+                message: message,
+                owner: owner
+            })
+            history.push('/')
+        }
+    }
+
+    let deleteNote = async () => {
+        await notepadContext.deleteNote(note.id)
+        history.push('/')
+    }
+    let backToHome = async () => {
+        history.push('/')
+    }
 
     return (
-        <Fragment>
-            <Link to='/' className='btn btn-light'>
-                Back To Search
-            </Link>
-            Hireable:{' '}
-            {hireable ? (
-                <i className='fas fa-check text-success' />
-            ) : (
-                <i className='fas fa-times-circle text-danger' />
-            )}
-            <div className='card grid-2'>
-                <div className='all-center'>
-                    <img
-                        src={avatar_url}
-                        className='round-img'
-                        alt=''
-                        style={{ width: '150px' }}
-                    />
-                    <h1>{name}</h1>
-                    <p>Location: {location}</p>
-                </div>
-                <div>
-                    {bio && (
-                        <Fragment>
-                            <h3>Bio</h3>
-                            <p>{bio}</p>
-                        </Fragment>
-                    )}
-                    <a href={html_url} className='btn btn-dark my-1'>
-                        Visit Github Profile
-                    </a>
-                    <ul>
-                        <li>
-                            {login && (
-                                <Fragment>
-                                    <strong>Username: </strong> {login}
-                                </Fragment>
-                            )}
-                        </li>
+        <Container component="main" maxWidth="md">
+            <div className={classes.paper}>
+                <h1>Note Detail</h1>
 
-                        <li>
-                            {company && (
-                                <Fragment>
-                                    <strong>Company: </strong> {company}
-                                </Fragment>
-                            )}
-                        </li>
+                <form className={classes.form} noValidate onSubmit={saveNote}>
+                    <Grid container spacing={2}>
+                        <Grid item xs={12}>
+                            <TextField
+                                name="title"
+                                variant="outlined"
+                                required
+                                fullWidth
+                                id="title"
+                                label="Title"
+                                autoFocus
+                                value={title || note?.title}
+                                onChange={(e) => setTitle(e.target.value)}
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField
+                                variant="outlined"
+                                required
+                                fullWidth
+                                id="message"
+                                label="Message"
+                                name="message"
+                                value={message || note?.message}
+                                onChange={(e) => setMessage(e.target.value)}
+                                rows={3}
+                                multiline
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField
+                                name="owner"
+                                variant="outlined"
+                                required
+                                fullWidth
+                                id="owner"
+                                label="Owner"
+                                value={owner || note?.owner}
+                                onChange={(e) => setOwner(e.target.value)}
+                                autoFocus
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <Button
+                                type="submit"
+                                variant="contained"
+                                color="primary"
+                                className={classes.btn}
+                            >
+                                Save
+                            </Button>
+                            <Button
+                                variant="contained"
+                                color="secondary"
+                                className={classes.btn}
+                                onClick={deleteNote}
+                            >
+                                Delete
+                            </Button>
+                            <Button
+                                variant="contained"
+                                color="default"
+                                className={classes.btn}
+                                onClick={backToHome}
+                            >
+                                Back
+                            </Button>
+                        </Grid>
+                    </Grid>
 
-                        <li>
-                            {blog && (
-                                <Fragment>
-                                    <strong>Website: </strong> {blog}
-                                </Fragment>
-                            )}
-                        </li>
-                    </ul>
-                </div>
+
+                </form>
             </div>
-            <div className='card text-center'>
-                <div className='badge badge-primary'>Followers: {followers}</div>
-                <div className='badge badge-success'>Following: {following}</div>
-                <div className='badge badge-light'>Public Repos: {public_repos}</div>
-                <div className='badge badge-dark'>Public Gists: {public_gists}</div>
-            </div>
-            <Repos repos={githubContext.repos} />
-        </Fragment>
+        </Container>
     );
-
 }
 
-export default User;
+export default Note;

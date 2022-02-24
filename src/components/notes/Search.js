@@ -1,45 +1,52 @@
-import React, { useState, useContext } from 'react';
+import React, { useContext } from 'react';
 import NotepadContext from '../../context/notepadContext';
 
+import TextField from '@mui/material/TextField';
+
+import {
+    Container,
+    makeStyles,
+} from "@material-ui/core";
+
+
+const useStyles = makeStyles((theme) => ({
+    paper: {
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "left"
+    },
+    textfield: {
+        width: "100%", // Fix IE 11 issue.
+        marginTop: theme.spacing(1),
+        float: 'left'
+    },
+
+}));
 
 const Search = () => {
 
     const notepadContext = useContext(NotepadContext);
 
+    const classes = useStyles();
 
-
-    const [text, setText] = useState('');
-
-
-    const onSubmit = e => {
+    const onChange = e => {
         e.preventDefault();
 
-        notepadContext.getNotes(text);
-        setText('');
+        notepadContext.getNotes(e.target.value);
 
     };
 
-    const onChange = e => setText(e.target.value);
-
     return (
-        <div>
-            <form onSubmit={onSubmit} className='form'>
-                <div>
-                    <input
-                        type='text'
-                        name='text'
-                        placeholder='Search Notes...'
-                        value={text}
-                        onChange={onChange}
-                    />
-                    <input
-                        type='submit'
-                        value='Search'
-                        className='btn btn-dark btn-block'
-                    /></div>
-            </form>
+        <Container component="main" maxWidth="md">
+            <div className={classes.paper}>
+                <h1>Notes List</h1>
 
-        </div>
+                <TextField className={classes.textfield}
+                    onChange={onChange} id="outlined-search" label="Search Note" type="search"
+                />
+
+            </div>
+        </Container>
     )
 
 };
