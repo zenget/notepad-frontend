@@ -13,7 +13,7 @@ import {
     REMOVE_ALERT
 } from './types';
 
-let baseUrl = 'http://127.0.0.1:8000/api/v1/notes';
+let baseUrl = 'http://127.0.0.1:8001/api/v1/notes';
 
 const NotepadState = props => {
     const initialState = {
@@ -69,9 +69,11 @@ const NotepadState = props => {
                 type: SET_ALERT,
                 payload: { type: 'error', message: err.message || err.response?.data }
             })
-            setTimeout(() => dispatch({
-                type: REMOVE_ALERT
-            }), 5000);
+            setTimeout(() => {
+                return dispatch({
+                    type: REMOVE_ALERT
+                });
+            }, 5000);
         }
     };
 
@@ -98,9 +100,11 @@ const NotepadState = props => {
                 type: SET_ALERT,
                 payload: { type: 'error', message: err.message || err.response?.data }
             })
-            setTimeout(() => dispatch({
-                type: REMOVE_ALERT
-            }), 5000);
+            setTimeout(() => {
+                return dispatch({
+                    type: REMOVE_ALERT
+                });
+            }, 5000);
         }
     };
     // updateNote
